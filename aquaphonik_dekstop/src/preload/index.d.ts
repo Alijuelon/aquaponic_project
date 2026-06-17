@@ -1,0 +1,49 @@
+import { ElectronAPI } from '@electron-toolkit/preload'
+
+interface SerialAPI {
+  listPorts: () => Promise<
+    Array<{
+      path: string
+      manufacturer?: string
+      serialNumber?: string
+      vendorId?: string
+      productId?: string
+    }>
+  >
+  connect: (portPath: string, baudRate?: number) => Promise<{ success: boolean; message: string }>
+  disconnect: () => Promise<{ success: boolean; message: string }>
+  sendCommand: (command: string) => Promise<{ success: boolean; message: string }>
+  getStatus: () => Promise<{ connected: boolean; port: string }>
+  onData: (callback: (data: Record<string, number>) => void) => void
+  onStatusChange: (callback: (status: { connected: boolean; port: string }) => void) => void
+  onError: (callback: (error: { message: string }) => void) => void
+  removeAllListeners: () => void
+}
+
+interface DatabaseAPI {
+  getLatestLogs: (limit?: number) => Promise<Array<Record<string, number | string>>>
+  getLogsByDateRange: (
+    startDate: string,
+    endDate: string
+  ) => Promise<Array<Record<string, number | string>>>
+  getLogCount: () => Promise<number>
+  deleteOldLogs: (daysToKeep?: number) => Promise<number>
+}
+
+interface SettingsAPI {
+  setLogInterval: (minutes: number) => Promise<{ success: boolean; interval: number }>
+  getLogInterval: () => Promise<{ interval: number }>
+}
+
+interface AquaphonikAPI {
+  serial: SerialAPI
+  database: DatabaseAPI
+  settings: SettingsAPI
+}
+
+declare global {
+  interface Window {
+    electron: ElectronAPI
+    api: AquaphonikAPI
+  }
+}
