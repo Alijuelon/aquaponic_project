@@ -82,8 +82,8 @@ const floatingSensors = computed(() => [
 <template>
   <div class="dashboard-viewport overflow-y-auto h-full scroll-smooth">
     <div
-      class="dashboard-scale-wrapper p-4 lg:p-6 xl:p-8 space-y-6 xl:space-y-8"
-      :style="{ transform: `scale(${dashboardScale})`, transformOrigin: 'top left', width: `${100 / dashboardScale}%` }"
+      class="dashboard-scale-wrapper p-4 lg:p-6 xl:p-8 space-y-6 xl:space-y-8 flex flex-col min-h-full"
+      :style="{ zoom: dashboardScale }"
     >
     <!-- No extra header here, moved to Top Nav -->
 
@@ -110,10 +110,10 @@ const floatingSensors = computed(() => [
     </div>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <div v-if="dataReceived || isConnected" class="space-y-6 md:space-y-8">
+    <div v-if="dataReceived || isConnected" class="space-y-6 md:space-y-8 flex-1 flex flex-col">
 
       <!-- ===== ROW 1: Floating Sensors + Gauges + Control Panel ===== -->
-      <div class="flex flex-row gap-6">
+      <div class="flex flex-row gap-6 flex-1">
 
         <!-- LEFT: Floating Sensor Badges (Redesigned for visibility) -->
         <div class="w-48 flex flex-col items-center justify-center gap-5">
@@ -257,7 +257,7 @@ const floatingSensors = computed(() => [
         </div>
 
         <!-- RIGHT: Control Panel (Moved back from bottom) -->
-        <div class="w-64 xl:w-80">
+        <div class="w-64 xl:w-80 h-full">
           <ControlPanel
             :pump-status="isPumpOn"
             :oxygen-status="isOxygenOn"
