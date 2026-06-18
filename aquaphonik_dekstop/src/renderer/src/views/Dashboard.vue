@@ -113,14 +113,14 @@ const floatingSensors = computed(() => [
     <div v-if="dataReceived || isConnected" class="space-y-6 md:space-y-8 flex-1 flex flex-col">
 
       <!-- ===== ROW 1: Floating Sensors + Gauges + Control Panel ===== -->
-      <div class="flex flex-row gap-6 flex-1">
+      <div class="flex flex-row gap-6 flex-1 items-stretch">
 
         <!-- LEFT: Floating Sensor Badges (Redesigned for visibility) -->
-        <div class="w-48 flex flex-col items-center justify-center gap-5">
+        <div class="w-48 flex flex-col items-stretch justify-between gap-5 h-full">
           <div
             v-for="(sensor, idx) in floatingSensors"
             :key="sensor.title"
-            class="sensor-badge group w-full flex flex-col items-center justify-center p-3 xl:py-4 rounded-2xl bg-slate-900/80 border-2 border-white/20 shadow-2xl backdrop-blur-xl"
+            class="sensor-badge group flex-1 w-full flex flex-col items-center justify-center p-3 xl:py-4 rounded-2xl bg-slate-900/80 border-2 border-white/20 shadow-2xl backdrop-blur-xl"
             :class="{
               'animate-float': idx === 0,
               'animate-float-delay-1': idx === 1,
@@ -163,8 +163,8 @@ const floatingSensors = computed(() => [
         </div>
 
         <!-- CENTER: Main Gauge Panel -->
-        <div class="flex-1 glass-card p-4 lg:p-6 xl:p-8 bg-slate-900/80 border-2 border-white/20 shadow-2xl rounded-3xl flex flex-col justify-between backdrop-blur-xl">
-          <div>
+        <div class="flex-1 glass-card p-4 lg:p-6 xl:p-8 bg-slate-900/80 border-2 border-white/20 shadow-2xl rounded-3xl flex flex-col backdrop-blur-xl h-full">
+          <div class="flex flex-col justify-center">
             <div class="flex items-center gap-3 mb-6 bg-white/10 p-3 rounded-xl w-fit border border-white/20">
               <div class="w-3 h-3 rounded-full bg-neon-green" style="box-shadow: 0 0 12px rgba(57,255,20,0.8);"></div>
               <h2 class="text-xs lg:text-sm xl:text-base font-bold text-white uppercase tracking-widest">Parameter Utama</h2>
@@ -188,10 +188,10 @@ const floatingSensors = computed(() => [
           </div>
 
           <!-- Secondary parameters row -->
-          <div class="mt-4 lg:mt-6 xl:mt-8 pt-4 lg:pt-6 border-t-2 border-white/30">
-            <div class="flex flex-wrap justify-center gap-2 lg:gap-3 xl:gap-4">
+          <div class="mt-4 lg:mt-6 xl:mt-8 pt-4 lg:pt-6 border-t-2 border-white/30 flex-1 flex flex-col">
+            <div class="flex flex-row justify-center gap-2 lg:gap-3 xl:gap-4 flex-1 items-stretch">
               <!-- Kelembaban -->
-              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md h-full">
                 <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-neon-cyan/20 flex items-center justify-center flex-shrink-0 border border-neon-cyan/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-neon-cyan drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
@@ -204,7 +204,7 @@ const floatingSensors = computed(() => [
                 </div>
               </div>
               <!-- CO2 -->
-              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md h-full">
                 <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-emerald-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" stroke-linecap="round"/>
@@ -217,7 +217,7 @@ const floatingSensors = computed(() => [
                 </div>
               </div>
               <!-- eCO2 -->
-              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md h-full">
                 <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0 border border-violet-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-violet-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
@@ -229,7 +229,7 @@ const floatingSensors = computed(() => [
                 </div>
               </div>
               <!-- TVOC -->
-              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md h-full">
                 <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-amber-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
@@ -241,7 +241,7 @@ const floatingSensors = computed(() => [
                 </div>
               </div>
               <!-- pH Volts -->
-              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-slate-800/80 border-2 border-white/20 shadow-md h-full">
                 <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
