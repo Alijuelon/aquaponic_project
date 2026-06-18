@@ -116,7 +116,7 @@ const floatingSensors = computed(() => [
       <div class="flex flex-row gap-6 flex-1 items-stretch">
 
         <!-- LEFT: Floating Sensor Badges (Redesigned for visibility) -->
-        <div class="w-48 flex flex-col items-stretch justify-between gap-5 h-full">
+        <div class="w-48 flex flex-col items-stretch gap-4 lg:gap-6 h-full min-h-0">
           <div
             v-for="(sensor, idx) in floatingSensors"
             :key="sensor.title"

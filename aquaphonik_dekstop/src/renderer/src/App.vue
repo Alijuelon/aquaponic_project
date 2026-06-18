@@ -32,7 +32,7 @@ function toggleSidebar(): void {
       :style="{ backgroundImage: `url(${bgImage})` }"
     >
       <!-- Dark overlay for readability in outdoor environment -->
-      <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-md"></div>
+      <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"></div>
     </div>
 
     <!-- Main Layout (over background) -->
