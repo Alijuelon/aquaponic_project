@@ -42,7 +42,7 @@ function toggleOxygen(): void {
 </script>
 
 <template>
-  <div class="glass-card p-4 lg:p-5 xl:p-6 h-full transition-colors duration-300 bg-slate-900/80 border-2 border-white/20 shadow-2xl rounded-3xl backdrop-blur-xl flex flex-col">
+  <div class="glass-card p-4 lg:p-5 xl:p-6 w-full transition-colors duration-300 bg-slate-900/80 border-2 border-white/20 shadow-2xl rounded-3xl backdrop-blur-xl flex flex-col">
     <div class="flex items-center gap-3 mb-5 bg-white/10 p-3 rounded-xl w-fit border border-white/20">
       <svg class="w-5 h-5 text-emerald-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         stroke-width="2.5">
@@ -53,10 +53,10 @@ function toggleOxygen(): void {
       <h2 class="text-xs lg:text-sm xl:text-base font-bold text-white uppercase tracking-wider">Control Panel</h2>
     </div>
 
-    <div class="flex-1 flex flex-col gap-3 lg:gap-5 xl:gap-6 justify-center">
+    <div class="flex flex-col sm:flex-row gap-3 lg:gap-5 xl:gap-6 w-full">
       <!-- Water Pump Control -->
       <div
-        class="flex items-center justify-between p-3 lg:p-4 xl:p-5 rounded-2xl border transition-all duration-300 shadow-lg hover:shadow-xl"
+        class="flex-1 flex items-center justify-between p-3 lg:p-4 xl:p-5 rounded-2xl border transition-all duration-300 shadow-lg hover:shadow-xl"
         :class="pumpStatus ? 'bg-aqua-500/20 border-aqua-400/50' : 'bg-slate-800/80 border-white/20'">
         <div class="flex items-center gap-3 lg:gap-4 xl:gap-5">
           <div class="w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-xl flex items-center justify-center transition-colors duration-300 shadow-inner border"
@@ -84,7 +84,7 @@ function toggleOxygen(): void {
 
       <!-- Oxygen Pump Control -->
       <div
-        class="flex items-center justify-between p-3 lg:p-4 xl:p-5 rounded-2xl border transition-all duration-300 shadow-lg hover:shadow-xl"
+        class="flex-1 flex items-center justify-between p-3 lg:p-4 xl:p-5 rounded-2xl border transition-all duration-300 shadow-lg hover:shadow-xl"
         :class="oxygenStatus ? 'bg-ocean-500/20 border-ocean-400/50' : 'bg-slate-800/80 border-white/20'">
         <div class="flex items-center gap-3 lg:gap-4 xl:gap-5">
           <div class="w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-xl flex items-center justify-center transition-colors duration-300 shadow-inner border"
