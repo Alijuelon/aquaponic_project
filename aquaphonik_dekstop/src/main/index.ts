@@ -29,7 +29,7 @@ import {
   closeDatabase
 } from './database'
 // Server: Modul komunikasi REST API dan Socket.IO dengan Flutter Mobile
-import { initServer, publishSensorData, closeServer } from './server'
+import { initServer, publishSensorData, closeServer } from './express-api'
 
 // --- Data Logging Interval ---
 // We receive data every ~2 seconds from the MCU, but we only save to DB

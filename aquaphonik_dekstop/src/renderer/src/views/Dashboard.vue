@@ -162,10 +162,8 @@ const floatingSensors = computed(() => [
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: Gauges + Control Panel -->
-        <div class="flex-1 flex flex-col gap-4 lg:gap-6 h-full min-h-0">
-          <!-- TOP: Main Gauge Panel -->
-          <div class="glass-card p-4 lg:p-6 xl:p-8 bg-slate-900/80 border-2 border-white/20 shadow-2xl rounded-3xl flex flex-col backdrop-blur-xl flex-1 min-h-0">
+        <!-- CENTER: Main Gauge Panel -->
+        <div class="flex-1 glass-card p-4 lg:p-6 xl:p-8 bg-slate-900/80 border-2 border-white/20 shadow-2xl rounded-3xl flex flex-col backdrop-blur-xl h-full min-h-0">
           <div class="flex flex-col justify-center">
             <div class="flex items-center gap-3 mb-6 bg-white/10 p-3 rounded-xl w-fit border border-white/20">
               <div class="w-3 h-3 rounded-full bg-neon-green" style="box-shadow: 0 0 12px rgba(57,255,20,0.8);"></div>
@@ -256,18 +254,17 @@ const floatingSensors = computed(() => [
               </div>
             </div>
           </div>
-          </div>
-
-          <!-- BOTTOM: Control Panel -->
-          <div class="w-full shrink-0">
-            <ControlPanel
-              :pump-status="isPumpOn"
-              :oxygen-status="isOxygenOn"
-              @toggle-pump="handlePumpToggle"
-              @toggle-oxygen="handleOxygenToggle"
-            />
-          </div>
         </div>
+      </div>
+
+      <!-- ROW 2: BOTTOM Control Panel Full Width -->
+      <div class="w-full shrink-0">
+        <ControlPanel
+          :pump-status="isPumpOn"
+          :oxygen-status="isOxygenOn"
+          @toggle-pump="handlePumpToggle"
+          @toggle-oxygen="handleOxygenToggle"
+        />
       </div>
     </div>
     </div>
