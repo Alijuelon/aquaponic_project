@@ -46,7 +46,8 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     title: 'AquaPhonik Desktop',
-    ...(process.platform === 'linux' ? { icon } : {}),
+    // Untuk Linux (Raspberry Pi), jalankan dalam mode fullscreen secara default
+    ...(process.platform === 'linux' ? { icon, fullscreen: true, kiosk: true } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -54,6 +55,9 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
+    if (process.platform === 'linux') {
+      mainWindow.maximize()
+    }
     mainWindow.show()
   })
 
