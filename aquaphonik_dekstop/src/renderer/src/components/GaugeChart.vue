@@ -63,7 +63,7 @@ const gaugeOption = computed(() => {
             width: lineWidth,
             color: [
               [pct, neonColor],
-              [1, 'rgba(255, 255, 255, 0.1)']
+              [1, 'rgba(255, 255, 255, 0.25)']
             ]
           },
           roundCap: true
@@ -75,7 +75,7 @@ const gaugeOption = computed(() => {
           itemStyle: {
             color: neonColor,
             shadowColor: neonColor,
-            shadowBlur: Math.round(sz * 0.1)
+            shadowBlur: Math.round(sz * 0.15)
           }
         },
         pointer: { show: false },
@@ -87,8 +87,8 @@ const gaugeOption = computed(() => {
           offsetCenter: [0, '80%'],
           fontSize: titleFontSize,
           fontFamily: 'Inter',
-          fontWeight: 700,
-          color: 'rgba(255, 255, 255, 0.9)'
+          fontWeight: 800,
+          color: '#ffffff'
         },
         detail: {
           valueAnimation: true,

@@ -31,8 +31,8 @@ function toggleSidebar(): void {
       class="absolute inset-0 bg-cover bg-center bg-no-repeat"
       :style="{ backgroundImage: `url(${bgImage})` }"
     >
-      <!-- Dark overlay for readability -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+      <!-- Dark overlay for readability in outdoor environment -->
+      <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-md"></div>
     </div>
 
     <!-- Main Layout (over background) -->
@@ -78,7 +78,7 @@ function toggleSidebar(): void {
     </div>
 
     <!-- Ambient glow particles (decorative) -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-aqua-500/5 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-ocean-500/5 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style="animation-delay: 1s;"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-aqua-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-ocean-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style="animation-delay: 1s;"></div>
   </div>
 </template>

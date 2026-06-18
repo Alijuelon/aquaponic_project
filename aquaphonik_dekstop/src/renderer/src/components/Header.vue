@@ -52,7 +52,7 @@ async function handleScan(): Promise<void> {
 </script>
 
 <template>
-  <header class="w-full h-auto lg:h-14 py-2 lg:py-0 bg-black/20 backdrop-blur-xl border-b border-white/[0.06] px-3 lg:px-4 flex flex-col lg:flex-row items-center justify-between gap-2 transition-all duration-300 z-50">
+  <header class="w-full h-auto lg:h-14 py-2 lg:py-0 bg-slate-950/80 backdrop-blur-xl border-b-2 border-white/20 px-3 lg:px-4 flex flex-col lg:flex-row items-center justify-between gap-2 transition-all duration-300 z-50">
     <!-- Left: Page title & Logo -->
     <div class="flex items-center gap-2 lg:gap-3 w-full lg:w-auto">
       <!-- App Logo -->

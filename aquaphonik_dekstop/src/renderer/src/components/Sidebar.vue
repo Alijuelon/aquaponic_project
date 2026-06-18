@@ -30,7 +30,7 @@ function navigateTo(path: string): void {
 </script>
 
 <template>
-  <aside class="w-full h-14 md:h-[60px] flex flex-row bg-black/50 backdrop-blur-3xl border-t border-white/20 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+  <aside class="w-full h-14 md:h-[60px] flex flex-row bg-slate-950/90 backdrop-blur-3xl border-t-2 border-white/30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
     <!-- Navigation Items -->
     <nav class="flex-1 flex flex-row justify-around items-center px-2 sm:px-6 md:px-12">
       <button
