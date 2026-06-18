@@ -11,7 +11,7 @@ import ControlPanel from '../components/ControlPanel.vue'
 import { useSensorData } from '../composables/useSensorData'
 import { useSerial } from '../composables/useSerial'
 
-const { sensorData, lastUpdateFormatted, dataReceived, chartHistory, isPumpOn, isOxygenOn } =
+const { sensorData, dataReceived, isPumpOn, isOxygenOn } =
   useSensorData()
 const { sendCommand, isConnected } = useSerial()
 
@@ -32,13 +32,21 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 
-// Compute scale factor: base design is 1400px wide. Below that, scale down.
-// Minimum scale ~0.55 for very small screens (800px)
+// Compute scale factor: base design is 1400px wide and 850px high. Below that, scale down.
+// Minimum scale ~0.45 for very small screens
 const dashboardScale = computed(() => {
   const w = windowWidth.value
-  if (w >= 1400) return 1
-  // Scale proportionally from 1400 down to 800
-  return Math.max(0.55, w / 1400)
+  const h = windowHeight.value
+  
+  // Calculate scale required for width and height separately
+  const scaleW = w / 1400
+  const scaleH = h / 850
+  
+  // Take the smaller scale to ensure it fits both horizontally and vertically without scrolling
+  const scale = Math.min(scaleW, scaleH)
+  
+  if (scale >= 1) return 1
+  return Math.max(0.45, scale)
 })
 
 // Compute responsive gauge size based on viewport
