@@ -52,9 +52,9 @@ async function handleScan(): Promise<void> {
 </script>
 
 <template>
-  <header class="w-full h-auto md:h-14 py-2 md:py-0 bg-black/20 backdrop-blur-xl border-b border-white/[0.06] px-4 flex flex-col md:flex-row items-center justify-between gap-2 transition-all duration-300 z-50">
+  <header class="w-full h-auto lg:h-14 py-2 lg:py-0 bg-black/20 backdrop-blur-xl border-b border-white/[0.06] px-3 lg:px-4 flex flex-col lg:flex-row items-center justify-between gap-2 transition-all duration-300 z-50">
     <!-- Left: Page title & Logo -->
-    <div class="flex items-center gap-3 w-full md:w-auto">
+    <div class="flex items-center gap-2 lg:gap-3 w-full lg:w-auto">
       <!-- App Logo -->
       <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-cyan to-neon-green/50 p-[1.5px] shadow-[0_0_15px_rgba(51,238,255,0.3)]">
         <div class="w-full h-full bg-black/90 rounded-md flex items-center justify-center">
@@ -63,11 +63,11 @@ async function handleScan(): Promise<void> {
           </svg>
         </div>
       </div>
-      <h2 class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tighter drop-shadow-sm uppercase">
+      <h2 class="text-lg lg:text-xl xl:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tighter drop-shadow-sm uppercase">
         AQUA<span class="text-neon-cyan drop-shadow-[0_0_8px_rgba(51,238,255,0.8)]">PHONIK</span>
       </h2>
       <!-- Live indicator & Time -->
-      <div class="ml-2 flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-black/40 border border-white/10 shadow-inner">
+      <div class="ml-1 lg:ml-2 flex items-center gap-2 px-2 py-1 lg:px-4 lg:py-1.5 rounded-full bg-black/40 border border-white/10 shadow-inner">
         <span
           class="w-2 h-2 rounded-full transition-all"
           :class="dataReceived ? 'bg-neon-green animate-pulse' : 'bg-slate-400'"
@@ -80,7 +80,7 @@ async function handleScan(): Promise<void> {
     </div>
 
     <!-- Right: Serial connection controls -->
-    <div class="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
+    <div class="flex flex-wrap items-center justify-center lg:justify-end gap-1.5 lg:gap-2 w-full lg:w-auto">
       <!-- Error toast -->
       <div v-if="lastError" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neon-red/10 border border-neon-red/20">
         <svg class="w-3.5 h-3.5 text-neon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

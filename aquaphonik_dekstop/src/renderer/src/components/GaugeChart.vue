@@ -41,6 +41,12 @@ const gaugeOption = computed(() => {
   const neonColor = getNeonColor(props.color)
   const pct = Math.min(1, Math.max(0, (props.value - props.min) / (props.max - props.min)))
 
+  // Scale font sizes proportionally to the component size
+  const sz = props.size || 160
+  const detailFontSize = Math.max(16, Math.round(sz * 0.2))
+  const titleFontSize = Math.max(9, Math.round(sz * 0.088))
+  const lineWidth = Math.max(10, Math.round(sz * 0.125))
+
   return {
     series: [
       {
@@ -54,7 +60,7 @@ const gaugeOption = computed(() => {
         splitNumber: 4,
         axisLine: {
           lineStyle: {
-            width: 20,
+            width: lineWidth,
             color: [
               [pct, neonColor],
               [1, 'rgba(255, 255, 255, 0.1)']
@@ -64,12 +70,12 @@ const gaugeOption = computed(() => {
         },
         progress: {
           show: true,
-          width: 20,
+          width: lineWidth,
           roundCap: true,
           itemStyle: {
             color: neonColor,
             shadowColor: neonColor,
-            shadowBlur: 16
+            shadowBlur: Math.round(sz * 0.1)
           }
         },
         pointer: { show: false },
@@ -79,14 +85,14 @@ const gaugeOption = computed(() => {
         title: {
           show: true,
           offsetCenter: [0, '80%'],
-          fontSize: 14,
+          fontSize: titleFontSize,
           fontFamily: 'Inter',
           fontWeight: 700,
           color: 'rgba(255, 255, 255, 0.9)'
         },
         detail: {
           valueAnimation: true,
-          fontSize: 32,
+          fontSize: detailFontSize,
           fontFamily: 'Inter',
           fontWeight: 800,
           color: neonColor,

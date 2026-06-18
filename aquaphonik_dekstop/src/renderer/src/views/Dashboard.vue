@@ -3,8 +3,9 @@
  * Dashboard View — Futuristic Glassmorphism Monitoring Dashboard
  * Features: ECharts Gauge Charts, Floating Sensor Badges, IoT Network Lines,
  * Neon Control Panel, and Dark Immersive Theme.
+ * Responsive: Scales down proportionally on small desktop LCD screens.
  */
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import GaugeChart from '../components/GaugeChart.vue'
 import ControlPanel from '../components/ControlPanel.vue'
 import { useSensorData } from '../composables/useSensorData'
@@ -13,6 +14,41 @@ import { useSerial } from '../composables/useSerial'
 const { sensorData, lastUpdateFormatted, dataReceived, chartHistory, isPumpOn, isOxygenOn } =
   useSensorData()
 const { sendCommand, isConnected } = useSerial()
+
+// === Responsive Scaling for Small Desktop LCD Screens ===
+const windowWidth = ref(window.innerWidth)
+const windowHeight = ref(window.innerHeight)
+
+function handleResize(): void {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// Compute scale factor: base design is 1400px wide. Below that, scale down.
+// Minimum scale ~0.55 for very small screens (800px)
+const dashboardScale = computed(() => {
+  const w = windowWidth.value
+  if (w >= 1400) return 1
+  // Scale proportionally from 1400 down to 800
+  return Math.max(0.55, w / 1400)
+})
+
+// Compute responsive gauge size based on viewport
+const gaugeSize = computed(() => {
+  const w = windowWidth.value
+  if (w >= 1400) return 160
+  if (w >= 1200) return 140
+  if (w >= 1000) return 120
+  return 100
+})
 
 // Handle pump toggle
 async function handlePumpToggle(newState: boolean): Promise<void> {
@@ -42,7 +78,11 @@ const floatingSensors = computed(() => [
 </script>
 
 <template>
-  <div class="p-6 md:p-8 overflow-y-auto h-full space-y-8 scroll-smooth">
+  <div class="dashboard-viewport overflow-y-auto h-full scroll-smooth">
+    <div
+      class="dashboard-scale-wrapper p-4 lg:p-6 xl:p-8 space-y-6 xl:space-y-8"
+      :style="{ transform: `scale(${dashboardScale})`, transformOrigin: 'top left', width: `${100 / dashboardScale}%` }"
+    >
     <!-- No extra header here, moved to Top Nav -->
 
     <!-- ===== No Data Warning ===== -->
@@ -107,12 +147,12 @@ const floatingSensors = computed(() => [
             <!-- Content -->
             <div class="flex flex-col text-right xl:text-center w-full min-w-0">
               <div class="flex items-end justify-end xl:justify-center gap-1 w-full min-w-0">
-                <span class="text-2xl md:text-3xl font-extrabold tracking-tight drop-shadow-lg truncate" :style="{ color: sensor.neonColor }">
+                <span class="text-xl lg:text-2xl xl:text-3xl font-extrabold tracking-tight drop-shadow-lg truncate" :style="{ color: sensor.neonColor }">
                   {{ sensor.value.toFixed(1) }}
                 </span>
                 <span class="text-xs font-bold text-white/80 mb-0.5">{{ sensor.unit }}</span>
               </div>
-              <span class="text-xs md:text-sm font-semibold text-slate-200 mt-1 uppercase tracking-wider truncate">{{ sensor.title }}</span>
+              <span class="text-[10px] lg:text-xs xl:text-sm font-semibold text-slate-200 mt-1 uppercase tracking-wider truncate">{{ sensor.title }}</span>
             </div>
             
             <!-- IoT connecting line -->
@@ -122,93 +162,93 @@ const floatingSensors = computed(() => [
         </div>
 
         <!-- CENTER: Main Gauge Panel -->
-        <div class="flex-1 glass-card p-6 md:p-8 bg-black/40 border border-white/10 shadow-2xl rounded-3xl flex flex-col justify-between backdrop-blur-md">
+        <div class="flex-1 glass-card p-4 lg:p-6 xl:p-8 bg-black/40 border border-white/10 shadow-2xl rounded-3xl flex flex-col justify-between backdrop-blur-md">
           <div>
             <div class="flex items-center gap-3 mb-6 bg-white/5 p-3 rounded-xl w-fit border border-white/10">
               <div class="w-3 h-3 rounded-full bg-neon-green" style="box-shadow: 0 0 12px rgba(57,255,20,0.8);"></div>
-              <h2 class="text-sm md:text-base font-bold text-white uppercase tracking-widest">Parameter Utama</h2>
+              <h2 class="text-xs lg:text-sm xl:text-base font-bold text-white uppercase tracking-widest">Parameter Utama</h2>
             </div>
 
             <!-- Gauge Grid -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-3 border border-white/10 shadow-inner">
-                <GaugeChart title="Suhu Air" :value="sensorData.temp_water" unit="°C" :min="15" :max="40" color="green" :size="160" />
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 xl:gap-6">
+              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-2 lg:p-3 border border-white/10 shadow-inner">
+                <GaugeChart title="Suhu Air" :value="sensorData.temp_water" unit="°C" :min="15" :max="40" color="green" :size="gaugeSize" />
               </div>
-              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-3 border border-white/10 shadow-inner">
-                <GaugeChart title="pH" :value="sensorData.ph" unit="pH" :min="0" :max="14" color="cyan" :size="160" />
+              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-2 lg:p-3 border border-white/10 shadow-inner">
+                <GaugeChart title="pH" :value="sensorData.ph" unit="pH" :min="0" :max="14" color="cyan" :size="gaugeSize" />
               </div>
-              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-3 border border-white/10 shadow-inner">
-                <GaugeChart title="TDS" :value="sensorData.tds" unit="ppm" :min="0" :max="1000" color="amber" :size="160" />
+              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-2 lg:p-3 border border-white/10 shadow-inner">
+                <GaugeChart title="TDS" :value="sensorData.tds" unit="ppm" :min="0" :max="1000" color="amber" :size="gaugeSize" />
               </div>
-              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-3 border border-white/10 shadow-inner">
-                <GaugeChart title="Suhu Udara" :value="sensorData.temp_air" unit="°C" :min="15" :max="50" color="rose" :size="160" />
+              <div class="flex flex-col items-center bg-black/20 rounded-2xl p-2 lg:p-3 border border-white/10 shadow-inner">
+                <GaugeChart title="Suhu Udara" :value="sensorData.temp_air" unit="°C" :min="15" :max="50" color="rose" :size="gaugeSize" />
               </div>
             </div>
           </div>
 
           <!-- Secondary parameters row -->
-          <div class="mt-8 pt-6 border-t border-white/20">
-            <div class="flex flex-wrap justify-center gap-3 md:gap-4">
+          <div class="mt-4 lg:mt-6 xl:mt-8 pt-4 lg:pt-6 border-t border-white/20">
+            <div class="flex flex-wrap justify-center gap-2 lg:gap-3 xl:gap-4">
               <!-- Kelembaban -->
-              <div class="flex-1 min-w-[130px] flex items-center gap-3 px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
-                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-neon-cyan/20 flex items-center justify-center flex-shrink-0 border border-neon-cyan/30">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
+                <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-neon-cyan/20 flex items-center justify-center flex-shrink-0 border border-neon-cyan/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-neon-cyan drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
                     <path d="M8 14h8" stroke-linecap="round" />
                   </svg>
                 </div>
                 <div class="w-full">
-                  <div class="text-sm md:text-base font-extrabold text-white">{{ sensorData.humidity.toFixed(1) }}<span class="text-xs text-slate-300 ml-1">%</span></div>
-                  <div class="text-[10px] md:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">Kelembaban</div>
+                  <div class="text-xs lg:text-sm xl:text-base font-extrabold text-white">{{ sensorData.humidity.toFixed(1) }}<span class="text-[10px] lg:text-xs text-slate-300 ml-1">%</span></div>
+                  <div class="text-[9px] lg:text-[10px] xl:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">Kelembaban</div>
                 </div>
               </div>
               <!-- CO2 -->
-              <div class="flex-1 min-w-[130px] flex items-center gap-3 px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
-                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
+                <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-emerald-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" stroke-linecap="round"/>
                     <path d="M9.6 4.6A2 2 0 1 1 11 8H2" stroke-linecap="round"/>
                   </svg>
                 </div>
                 <div class="w-full">
-                  <div class="text-sm md:text-base font-extrabold text-white">{{ sensorData.co2.toFixed(0) }}<span class="text-xs text-slate-300 ml-1">ppm</span></div>
-                  <div class="text-[10px] md:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">CO₂</div>
+                  <div class="text-xs lg:text-sm xl:text-base font-extrabold text-white">{{ sensorData.co2.toFixed(0) }}<span class="text-[10px] lg:text-xs text-slate-300 ml-1">ppm</span></div>
+                  <div class="text-[9px] lg:text-[10px] xl:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">CO₂</div>
                 </div>
               </div>
               <!-- eCO2 -->
-              <div class="flex-1 min-w-[130px] flex items-center gap-3 px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
-                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0 border border-violet-500/30">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
+                <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0 border border-violet-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-violet-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
                   </svg>
                 </div>
                 <div class="w-full">
-                  <div class="text-sm md:text-base font-extrabold text-white">{{ sensorData.eco2.toFixed(0) }}<span class="text-xs text-slate-300 ml-1">ppm</span></div>
-                  <div class="text-[10px] md:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">eCO₂</div>
+                  <div class="text-xs lg:text-sm xl:text-base font-extrabold text-white">{{ sensorData.eco2.toFixed(0) }}<span class="text-[10px] lg:text-xs text-slate-300 ml-1">ppm</span></div>
+                  <div class="text-[9px] lg:text-[10px] xl:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">eCO₂</div>
                 </div>
               </div>
               <!-- TVOC -->
-              <div class="flex-1 min-w-[130px] flex items-center gap-3 px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
-                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
+                <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-amber-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
                   </svg>
                 </div>
                 <div class="w-full">
-                  <div class="text-sm md:text-base font-extrabold text-white">{{ sensorData.tvoc.toFixed(0) }}<span class="text-xs text-slate-300 ml-1">ppb</span></div>
-                  <div class="text-[10px] md:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">TVOC</div>
+                  <div class="text-xs lg:text-sm xl:text-base font-extrabold text-white">{{ sensorData.tvoc.toFixed(0) }}<span class="text-[10px] lg:text-xs text-slate-300 ml-1">ppb</span></div>
+                  <div class="text-[9px] lg:text-[10px] xl:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">TVOC</div>
                 </div>
               </div>
               <!-- pH Volts -->
-              <div class="flex-1 min-w-[130px] flex items-center gap-3 px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
-                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+              <div class="flex-1 min-w-[100px] flex items-center gap-2 lg:gap-3 px-2 lg:px-3 xl:px-4 py-2.5 lg:py-3.5 rounded-xl bg-black/20 border border-white/10 shadow-md">
+                <div class="w-7 h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-lg lg:rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
                   <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-400 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                   </svg>
                 </div>
                 <div class="w-full">
-                  <div class="text-sm md:text-base font-extrabold text-white">{{ sensorData.ph_volts.toFixed(2) }}<span class="text-xs text-slate-300 ml-1">V</span></div>
-                  <div class="text-[10px] md:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">pH Volts</div>
+                  <div class="text-xs lg:text-sm xl:text-base font-extrabold text-white">{{ sensorData.ph_volts.toFixed(2) }}<span class="text-[10px] lg:text-xs text-slate-300 ml-1">V</span></div>
+                  <div class="text-[9px] lg:text-[10px] xl:text-xs font-semibold text-slate-300 uppercase leading-tight mt-0.5">pH Volts</div>
                 </div>
               </div>
             </div>
@@ -216,7 +256,7 @@ const floatingSensors = computed(() => [
         </div>
 
         <!-- RIGHT: Control Panel (Moved back from bottom) -->
-        <div class="xl:w-80">
+        <div class="xl:w-64 2xl:w-80">
           <ControlPanel
             :pump-status="isPumpOn"
             :oxygen-status="isOxygenOn"
@@ -225,6 +265,7 @@ const floatingSensors = computed(() => [
           />
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>

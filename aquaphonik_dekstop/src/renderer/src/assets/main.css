@@ -188,12 +188,9 @@
     position: relative;
   }
 
-  /* ===== Floating circular sensor badge ===== */
+  /* ===== Floating sensor badge ===== */
   .sensor-badge {
-    @apply relative flex flex-col items-center justify-center;
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
+    @apply relative;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
     border: 1.5px solid rgba(255, 255, 255, 0.12);
