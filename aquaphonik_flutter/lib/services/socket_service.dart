@@ -26,6 +26,10 @@ class SocketService {
     
     _socket = IO.io(finalUrl, IO.OptionBuilder()
       .setTransports(['websocket', 'polling']) // Mendukung websocket dan fallback ke polling
+      .enableReconnection() // Otomatis mencoba koneksi ulang jika terputus
+      .setReconnectionAttempts(double.maxFinite.toInt()) // Coba terus menerus
+      .setReconnectionDelay(2000) // Jeda awal 2 detik
+      .setReconnectionDelayMax(5000) // Maksimal jeda 5 detik antar percobaan
       .disableAutoConnect()
       .build()
     );

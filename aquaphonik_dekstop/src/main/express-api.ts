@@ -8,11 +8,18 @@ import { sendCommand } from './serial'
 let io: Server | null = null
 let httpServer: ReturnType<typeof createServer> | null = null
 
-const PORT = 8080
+const PORT = 8000
 
 export function initServer(): void {
   const app = express()
-  app.use(cors())
+  // Trust proxy sangat penting jika berada di belakang Cloudflare Tunnel
+  app.set('trust proxy', 1)
+  
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }))
   app.use(express.json())
 
   // --- REST API untuk Request History ---
@@ -49,7 +56,9 @@ export function initServer(): void {
   io = new Server(httpServer, {
     cors: {
       origin: '*',
-      methods: ['GET', 'POST']
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true
     }
   })
 
