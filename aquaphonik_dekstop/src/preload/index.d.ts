@@ -35,10 +35,23 @@ interface SettingsAPI {
   getLogInterval: () => Promise<{ interval: number }>
 }
 
+interface SystemAPI {
+  getNetworkIP: () => Promise<{ ip: string | null; iface: string | null }>
+}
+
+interface ExportAPI {
+  toExcel: (
+    data: Array<Record<string, number | string>>,
+    dateRange: { start: string; end: string }
+  ) => Promise<{ success: boolean; message: string; filePath?: string }>
+}
+
 interface AquaphonikAPI {
   serial: SerialAPI
   database: DatabaseAPI
   settings: SettingsAPI
+  system: SystemAPI
+  export: ExportAPI
 }
 
 declare global {

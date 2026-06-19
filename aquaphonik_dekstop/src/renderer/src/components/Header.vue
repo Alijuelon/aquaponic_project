@@ -3,7 +3,7 @@
  * Header — Top bar component
  * Glassmorphism header with serial connection controls.
  */
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useSerial } from '../composables/useSerial'
 import { useSensorData } from '../composables/useSensorData'
 
@@ -23,11 +23,38 @@ const { lastUpdateFormatted, dataReceived } = useSensorData()
 
 const selectedPort = ref('')
 const selectedBaudRate = ref(115200)
+const networkIP = ref<string | null>(null)
+const networkIface = ref<string | null>(null)
+let ipRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 const baudRates = [9600, 19200, 38400, 57600, 115200, 230400]
 
 // Auto-scan ports on mount
 scanPorts()
+
+// Fetch WiFi IP on mount and refresh every 30 seconds
+async function fetchNetworkIP(): Promise<void> {
+  try {
+    const result = await window.api.system.getNetworkIP()
+    networkIP.value = result.ip
+    networkIface.value = result.iface
+  } catch {
+    networkIP.value = null
+    networkIface.value = null
+  }
+}
+
+onMounted(() => {
+  fetchNetworkIP()
+  ipRefreshTimer = setInterval(fetchNetworkIP, 30000)
+})
+
+onUnmounted(() => {
+  if (ipRefreshTimer) {
+    clearInterval(ipRefreshTimer)
+    ipRefreshTimer = null
+  }
+})
 
 // Watch for available ports to auto-select and auto-connect
 watch(availablePorts, async (ports) => {
@@ -75,6 +102,25 @@ async function handleScan(): Promise<void> {
         ></span>
         <span class="text-[10px] md:text-xs font-mono font-bold text-white tracking-widest">
           {{ isConnected ? lastUpdateFormatted : 'OFFLINE' }}
+        </span>
+      </div>
+
+      <!-- WiFi IP Address -->
+      <div class="ml-1 lg:ml-2 flex items-center gap-2 px-2 py-1 lg:px-3 lg:py-1.5 rounded-full border shadow-inner transition-all duration-300"
+        :class="networkIP ? 'bg-neon-cyan/5 border-neon-cyan/20' : 'bg-black/40 border-white/10'"
+      >
+        <!-- WiFi Icon -->
+        <svg class="w-3.5 h-3.5 transition-colors" :class="networkIP ? 'text-neon-cyan' : 'text-slate-500'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+          <line x1="12" y1="20" x2="12.01" y2="20" />
+        </svg>
+        <span v-if="networkIP" class="text-[10px] md:text-xs font-mono font-bold text-neon-cyan tracking-wide" :style="'text-shadow: 0 0 8px rgba(51,238,255,0.4)'">
+          {{ networkIP }}
+        </span>
+        <span v-else class="text-[10px] md:text-xs font-mono font-bold text-slate-500 tracking-wide">
+          No Network
         </span>
       </div>
     </div>

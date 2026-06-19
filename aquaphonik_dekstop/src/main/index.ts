@@ -4,8 +4,10 @@
  * for serial port communication and database operations.
  */
 
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import ExcelJS from 'exceljs'
+import { networkInterfaces } from 'os'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -162,6 +164,231 @@ function registerIpcHandlers(): void {
     return { interval: logIntervalMinutes }
   })
 
+  // --- System Handlers ---
+
+  /**
+   * Get the current WiFi/LAN IP address
+   * Prioritizes wlan0 (Raspberry Pi WiFi), then eth0, then any non-internal IPv4
+   */
+  ipcMain.handle('system:get-network-ip', () => {
+    const nets = networkInterfaces()
+    // Priority order for interface names
+    const priorityInterfaces = ['wlan0', 'wlan1', 'Wi-Fi', 'eth0', 'en0', 'Ethernet']
+
+    // First, try priority interfaces
+    for (const name of priorityInterfaces) {
+      const iface = nets[name]
+      if (iface) {
+        for (const net of iface) {
+          if (net.family === 'IPv4' && !net.internal) {
+            return { ip: net.address, iface: name }
+          }
+        }
+      }
+    }
+
+    // Fallback: any non-internal IPv4
+    for (const [name, iface] of Object.entries(nets)) {
+      if (iface) {
+        for (const net of iface) {
+          if (net.family === 'IPv4' && !net.internal) {
+            return { ip: net.address, iface: name }
+          }
+        }
+      }
+    }
+
+    return { ip: null, iface: null }
+  })
+
+  // --- Export Handlers ---
+
+  /**
+   * Export sensor data to Excel (.xlsx) file
+   * Receives data array and date range info, creates styled workbook,
+   * prompts user for save location via native dialog.
+   */
+  ipcMain.handle(
+    'export:excel',
+    async (
+      _event,
+      data: Array<Record<string, number | string>>,
+      dateRange: { start: string; end: string }
+    ) => {
+      if (!data || data.length === 0) {
+        return { success: false, message: 'Tidak ada data untuk diekspor' }
+      }
+
+      // Show save dialog
+      const defaultName = `AquaPhonik_Data_${dateRange.start}_to_${dateRange.end}.xlsx`
+      const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow()!, {
+        title: 'Simpan Data Sensor ke Excel',
+        defaultPath: defaultName,
+        filters: [
+          { name: 'Excel Files', extensions: ['xlsx'] },
+          { name: 'All Files', extensions: ['*'] }
+        ]
+      })
+
+      if (result.canceled || !result.filePath) {
+        return { success: false, message: 'Export dibatalkan' }
+      }
+
+      try {
+        const workbook = new ExcelJS.Workbook()
+        workbook.creator = 'AquaPhonik Desktop'
+        workbook.created = new Date()
+
+        const worksheet = workbook.addWorksheet('Sensor Data', {
+          properties: { defaultRowHeight: 22 }
+        })
+
+        // Define columns
+        worksheet.columns = [
+          { header: 'No', key: 'no', width: 6 },
+          { header: 'Waktu', key: 'timestamp', width: 22 },
+          { header: 'Suhu Air (°C)', key: 'temp_water', width: 15 },
+          { header: 'pH', key: 'ph', width: 10 },
+          { header: 'TDS (ppm)', key: 'tds', width: 12 },
+          { header: 'DO (mg/L)', key: 'do_value', width: 12 },
+          { header: 'Turbidity', key: 'turbidity', width: 12 },
+          { header: 'Water Level', key: 'water_lvl', width: 13 },
+          { header: 'CO2 (ppm)', key: 'co2', width: 12 },
+          { header: 'eCO2 (ppm)', key: 'eco2', width: 12 },
+          { header: 'TVOC (ppb)', key: 'tvoc', width: 12 },
+          { header: 'Suhu Udara (°C)', key: 'temp_air', width: 16 },
+          { header: 'Kelembapan (%)', key: 'humidity', width: 15 },
+          { header: 'Pompa', key: 'pump_status', width: 10 },
+          { header: 'Oksigen', key: 'oxy_status', width: 10 }
+        ]
+
+        // Style header row
+        const headerRow = worksheet.getRow(1)
+        headerRow.height = 28
+        headerRow.eachCell((cell) => {
+          cell.font = {
+            bold: true,
+            color: { argb: 'FFFFFFFF' },
+            size: 11,
+            name: 'Calibri'
+          }
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF0D7377' } // Dark teal (AquaPhonik theme)
+          }
+          cell.alignment = {
+            horizontal: 'center',
+            vertical: 'middle',
+            wrapText: true
+          }
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF0A5C5F' } },
+            bottom: { style: 'thin', color: { argb: 'FF0A5C5F' } },
+            left: { style: 'thin', color: { argb: 'FF0A5C5F' } },
+            right: { style: 'thin', color: { argb: 'FF0A5C5F' } }
+          }
+        })
+
+        // Add data rows
+        data.forEach((row, index) => {
+          const formattedTime = new Date(row.timestamp as string).toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+
+          const dataRow = worksheet.addRow({
+            no: index + 1,
+            timestamp: formattedTime,
+            temp_water: Number(row.temp_water || 0).toFixed(1),
+            ph: Number(row.ph || 0).toFixed(2),
+            tds: Number(row.tds || 0).toFixed(0),
+            do_value: Number(row.do_value || 0).toFixed(1),
+            turbidity: Number(row.turbidity || 0).toFixed(0),
+            water_lvl: Number(row.water_lvl || 0).toFixed(1),
+            co2: Number(row.co2 || 0).toFixed(0),
+            eco2: Number(row.eco2 || 0).toFixed(0),
+            tvoc: Number(row.tvoc || 0).toFixed(0),
+            temp_air: Number(row.temp_air || 0).toFixed(1),
+            humidity: Number(row.humidity || 0).toFixed(1),
+            pump_status: Number(row.pump_status) === 1 ? 'ON' : 'OFF',
+            oxy_status: Number(row.oxy_status) === 1 ? 'ON' : 'OFF'
+          })
+
+          // Alternate row coloring
+          const bgColor = index % 2 === 0 ? 'FFF0FAFA' : 'FFFFFFFF'
+          dataRow.eachCell((cell) => {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: bgColor }
+            }
+            cell.border = {
+              top: { style: 'thin', color: { argb: 'FFD0D0D0' } },
+              bottom: { style: 'thin', color: { argb: 'FFD0D0D0' } },
+              left: { style: 'thin', color: { argb: 'FFD0D0D0' } },
+              right: { style: 'thin', color: { argb: 'FFD0D0D0' } }
+            }
+            cell.alignment = { horizontal: 'center', vertical: 'middle' }
+            cell.font = { size: 10, name: 'Calibri' }
+          })
+        })
+
+        // Add summary info row at the bottom
+        const emptyRow = worksheet.addRow([])
+        emptyRow.height = 10
+
+        const summaryRow = worksheet.addRow([
+          '',
+          `Exported: ${new Date().toLocaleString('id-ID')}`,
+          '',
+          '',
+          `Period: ${dateRange.start} s/d ${dateRange.end}`,
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          `Total: ${data.length} records`
+        ])
+        summaryRow.eachCell((cell) => {
+          cell.font = { italic: true, size: 9, color: { argb: 'FF888888' }, name: 'Calibri' }
+        })
+
+        // Freeze header row
+        worksheet.views = [{ state: 'frozen', ySplit: 1 }]
+
+        // Auto-filter on header
+        worksheet.autoFilter = {
+          from: { row: 1, column: 1 },
+          to: { row: 1, column: 15 }
+        }
+
+        // Write file
+        await workbook.xlsx.writeFile(result.filePath)
+
+        console.log(`[Export] Excel saved to: ${result.filePath}`)
+        return {
+          success: true,
+          message: `Berhasil menyimpan ${data.length} data ke Excel`,
+          filePath: result.filePath
+        }
+      } catch (error) {
+        console.error('[Export] Excel error:', error)
+        return {
+          success: false,
+          message: `Gagal menyimpan: ${(error as Error).message}`
+        }
+      }
+    }
+  )
+
   // --- Register serial data callback for conditional DB logging + MQTT publish ---
   onSerialData((data) => {
     const now = Date.now()
@@ -196,7 +423,7 @@ function registerIpcHandlers(): void {
 // =====================================================
 // App Lifecycle
 // =====================================================
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.aquaphonik.desktop')
 
   // DevTools shortcut
@@ -204,8 +431,8 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Initialize database
-  initDatabase()
+  // Initialize database — MUST await so pool is ready before IPC handlers and window
+  await initDatabase()
 
   // Initialize Server (Express + Socket.IO) untuk komunikasi dengan Flutter
   initServer()

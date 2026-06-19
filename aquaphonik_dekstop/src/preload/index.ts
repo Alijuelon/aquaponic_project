@@ -113,6 +113,23 @@ const aquaphonikAPI = {
     /** Get the current log interval */
     getLogInterval: (): Promise<{ interval: number }> =>
       ipcRenderer.invoke('settings:get-log-interval')
+  },
+
+  // ---- System ----
+  system: {
+    /** Get the current WiFi/LAN IP address */
+    getNetworkIP: (): Promise<{ ip: string | null; iface: string | null }> =>
+      ipcRenderer.invoke('system:get-network-ip')
+  },
+
+  // ---- Export ----
+  export: {
+    /** Export sensor data to Excel file */
+    toExcel: (
+      data: Array<Record<string, number | string>>,
+      dateRange: { start: string; end: string }
+    ): Promise<{ success: boolean; message: string; filePath?: string }> =>
+      ipcRenderer.invoke('export:excel', data, dateRange)
   }
 }
 

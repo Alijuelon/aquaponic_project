@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * History View — Displays historical sensor data from SQLite database.
- * Supports filtering by date range and displays data in a table.
+ * History View — Displays historical sensor data from PostgreSQL database.
+ * Works independently of serial/USB connection — data is always available.
+ * Supports filtering by date range and export to Excel.
  */
 import { ref, onMounted, computed } from 'vue'
 
@@ -27,6 +28,11 @@ const logs = ref<LogEntry[]>([])
 const isLoading = ref(false)
 const totalCount = ref(0)
 const limit = ref(50)
+const dbError = ref('')
+const isExporting = ref(false)
+const exportMessage = ref('')
+const exportSuccess = ref(false)
+let exportToastTimer: ReturnType<typeof setTimeout> | null = null
 
 // Date filter
 const startDate = ref('')
@@ -41,11 +47,13 @@ endDate.value = today.toISOString().split('T')[0]
 
 async function loadLatestLogs(): Promise<void> {
   isLoading.value = true
+  dbError.value = ''
   try {
     logs.value = (await window.api.database.getLatestLogs(limit.value)) as unknown as LogEntry[]
     totalCount.value = await window.api.database.getLogCount()
   } catch (err) {
     console.error('Failed to load logs:', err)
+    dbError.value = 'Gagal memuat data dari database. Pastikan PostgreSQL berjalan.'
   } finally {
     isLoading.value = false
   }
@@ -54,13 +62,16 @@ async function loadLatestLogs(): Promise<void> {
 async function loadByDateRange(): Promise<void> {
   if (!startDate.value || !endDate.value) return
   isLoading.value = true
+  dbError.value = ''
   try {
     logs.value = (await window.api.database.getLogsByDateRange(
       `${startDate.value} 00:00:00`,
       `${endDate.value} 23:59:59`
     )) as unknown as LogEntry[]
+    totalCount.value = logs.value.length
   } catch (err) {
     console.error('Failed to load filtered logs:', err)
+    dbError.value = 'Gagal memuat data berdasarkan filter. Pastikan PostgreSQL berjalan.'
   } finally {
     isLoading.value = false
   }
@@ -83,6 +94,41 @@ const formattedLogs = computed(() => {
 onMounted(() => {
   loadLatestLogs()
 })
+
+/**
+ * Export current data to Excel file
+ */
+async function exportToExcel(): Promise<void> {
+  if (logs.value.length === 0 || isExporting.value) return
+
+  isExporting.value = true
+  exportMessage.value = ''
+
+  try {
+    const result = await window.api.export.toExcel(
+      logs.value as unknown as Array<Record<string, number | string>>,
+      {
+        start: startDate.value || 'latest',
+        end: endDate.value || 'latest'
+      }
+    )
+
+    exportMessage.value = result.message
+    exportSuccess.value = result.success
+
+    // Auto-hide toast after 4 seconds
+    if (exportToastTimer) clearTimeout(exportToastTimer)
+    exportToastTimer = setTimeout(() => {
+      exportMessage.value = ''
+    }, 4000)
+  } catch (err) {
+    exportMessage.value = 'Gagal mengekspor data'
+    exportSuccess.value = false
+    console.error('Export error:', err)
+  } finally {
+    isExporting.value = false
+  }
+}
 </script>
 
 <template>
@@ -120,7 +166,96 @@ onMounted(() => {
           <option :value="200">200</option>
           <option :value="500">500</option>
         </select>
+
+        <!-- Export Excel Button -->
+        <button
+          @click="exportToExcel"
+          :disabled="logs.length === 0 || isExporting"
+          class="group relative px-5 py-2.5 rounded-xl font-bold text-white border transition-all duration-300 flex items-center gap-2.5 overflow-hidden"
+          :class="logs.length === 0 || isExporting
+            ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
+            : 'bg-gradient-to-r from-emerald-600/20 to-green-500/20 border-emerald-500/40 hover:border-emerald-400/60 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.97]'"
+        >
+          <!-- Shimmer effect on hover -->
+          <span class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></span>
+
+          <!-- Icon -->
+          <span v-if="isExporting" class="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>
+          <svg v-else class="w-4.5 h-4.5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+
+          <span class="relative z-10 text-sm">
+            {{ isExporting ? 'Mengekspor...' : 'Export Excel' }}
+          </span>
+
+          <!-- Excel icon badge -->
+          <span v-if="!isExporting" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[10px] font-bold text-emerald-400 tracking-wider border border-emerald-500/30">
+            .XLSX
+          </span>
+        </button>
       </div>
+    </div>
+
+    <!-- Export toast notification -->
+    <Transition name="toast">
+      <div v-if="exportMessage"
+        class="fixed top-6 right-6 z-[999] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all duration-300"
+        :class="exportSuccess
+          ? 'bg-emerald-900/80 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.3)]'
+          : 'bg-red-900/80 border-red-500/40 shadow-[0_0_30px_rgba(239,68,68,0.3)]'"
+      >
+        <!-- Icon -->
+        <div class="w-8 h-8 rounded-full flex items-center justify-center"
+          :class="exportSuccess ? 'bg-emerald-500/20' : 'bg-red-500/20'"
+        >
+          <svg v-if="exportSuccess" class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <svg v-else class="w-5 h-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4m0 4h.01" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold" :class="exportSuccess ? 'text-emerald-300' : 'text-red-300'">
+            {{ exportSuccess ? 'Export Berhasil!' : 'Export Gagal' }}
+          </span>
+          <span class="text-xs" :class="exportSuccess ? 'text-emerald-400/70' : 'text-red-400/70'">
+            {{ exportMessage }}
+          </span>
+        </div>
+        <!-- Close button -->
+        <button @click="exportMessage = ''" class="ml-2 p-1 rounded-lg hover:bg-white/10 transition-colors">
+          <svg class="w-4 h-4 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+    </Transition>
+
+    <!-- Data info bar -->
+    <div class="flex items-center justify-between px-5 py-3 rounded-2xl bg-black/20 border border-white/5">
+      <div class="flex items-center gap-3">
+        <!-- Database status icon -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+          <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+          </svg>
+          <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Database</span>
+        </div>
+        <span class="text-xs text-white/50">
+          Menampilkan <span class="font-bold text-white/80">{{ logs.length }}</span> data
+          <span v-if="totalCount > 0"> dari <span class="font-bold text-white/80">{{ totalCount }}</span> total</span>
+        </span>
+      </div>
+      <span class="text-[10px] text-white/30 italic">
+        Data tersimpan di database — tersedia tanpa koneksi USB
+      </span>
     </div>
 
     <!-- Table -->
@@ -131,6 +266,21 @@ onMounted(() => {
         <p class="text-base font-bold text-white mt-4 tracking-wide">Memuat data...</p>
       </div>
 
+      <!-- Database error state -->
+      <div v-else-if="dbError" class="p-12 text-center">
+        <div class="w-16 h-16 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-5">
+          <svg class="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4m0 4h.01" stroke-linecap="round" />
+          </svg>
+        </div>
+        <p class="text-lg font-bold text-red-300 mb-2">Database Error</p>
+        <p class="text-sm text-white/60 max-w-md mx-auto">{{ dbError }}</p>
+        <button @click="loadLatestLogs" class="mt-6 px-6 py-2.5 rounded-xl font-bold text-white bg-white/10 border border-white/20 hover:bg-white/20 transition-all">
+          Coba Lagi
+        </button>
+      </div>
+
       <!-- Empty state -->
       <div v-else-if="logs.length === 0" class="p-12 text-center">
         <svg class="w-16 h-16 mx-auto text-white/50 mb-4" viewBox="0 0 24 24" fill="none"
@@ -139,6 +289,10 @@ onMounted(() => {
           <path d="M3 9h18M9 3v18" />
         </svg>
         <p class="text-lg font-bold text-white/80">Belum ada data log tersimpan</p>
+        <p class="text-sm text-white/40 mt-2 max-w-md mx-auto">
+          Data sensor akan otomatis tersimpan saat perangkat terhubung.<br/>
+          Histori yang sudah tersimpan akan tetap tampil meskipun USB tidak terhubung.
+        </p>
       </div>
 
       <!-- Data table -->
@@ -196,3 +350,21 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Toast notification transitions */
+.toast-enter-active {
+  animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toast-leave-active {
+  animation: toast-out 0.3s cubic-bezier(0.55, 0, 1, 0.45);
+}
+@keyframes toast-in {
+  0% { opacity: 0; transform: translateX(100%) scale(0.9); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-out {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(100%) scale(0.9); }
+}
+</style>

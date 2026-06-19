@@ -15,7 +15,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  String _serverUrl = 'https://api.alijuelon.online'; // Diperbarui untuk URL Cloudflare
+  String _serverUrl = 'https://reasonably-replace-executive-gary.trycloudflare.com'; // Diperbarui untuk URL Cloudflare
   bool _isInit = false;
 
   // Socket Service tunggal untuk seluruh aplikasi

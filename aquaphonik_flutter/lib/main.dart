@@ -21,7 +21,7 @@ class AquaPhonikApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AquaPhonik Monitoring',
+      title: 'Aquaphonic Monitoring',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
