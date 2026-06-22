@@ -216,22 +216,22 @@ async function handleClose(): Promise<void> {
       </div>
 
       <!-- Window Controls -->
-      <div class="flex items-center gap-1 ml-2 pl-2 border-l border-white/10">
+      <div class="flex items-center gap-1.5 ml-2 pl-3 border-l-2 border-white/10">
         <button
           @click="handleMinimize"
-          class="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          class="flex items-center justify-center w-8 h-8 rounded-lg bg-black/40 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
           title="Minimize"
         >
-          <svg class="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </button>
         <button
           @click="handleClose"
-          class="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-red-500/80 transition-colors"
+          class="flex items-center justify-center w-8 h-8 rounded-lg bg-black/40 border border-white/10 text-white/60 hover:text-white hover:bg-neon-red/80 hover:border-neon-red/50 hover:shadow-[0_0_15px_rgba(255,23,68,0.5)] transition-all duration-200"
           title="Exit"
         >
-          <svg class="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>

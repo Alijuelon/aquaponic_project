@@ -209,7 +209,7 @@ async function exportToExcel(): Promise<void> {
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
 
-          <span class="relative z-10 text-sm drop-shadow-md">
+          <span class="relative z-10 text-sm drop-shadow-md hidden sm:inline-block">
             {{ isExporting ? 'Mengekspor...' : 'Export Excel' }}
           </span>
 
