@@ -3,34 +3,16 @@
  * Header — Top bar component
  * Glassmorphism header with serial connection controls.
  */
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useSerial } from '../composables/useSerial'
 import { useSensorData } from '../composables/useSensorData'
 
-const {
-  isConnected,
-  currentPort,
-  availablePorts,
-  isScanning,
-  isConnecting,
-  lastError,
-  scanPorts,
-  connect,
-  disconnect
-} = useSerial()
-
+const { isConnected, currentPort } = useSerial()
 const { lastUpdateFormatted, dataReceived } = useSensorData()
 
-const selectedPort = ref('')
-const selectedBaudRate = ref(115200)
 const networkIP = ref<string | null>(null)
 const networkIface = ref<string | null>(null)
 let ipRefreshTimer: ReturnType<typeof setInterval> | null = null
-
-const baudRates = [9600, 19200, 38400, 57600, 115200, 230400]
-
-// Auto-scan ports on mount
-scanPorts()
 
 // Fetch WiFi IP on mount and refresh every 30 seconds
 async function fetchNetworkIP(): Promise<void> {
@@ -55,27 +37,6 @@ onUnmounted(() => {
     ipRefreshTimer = null
   }
 })
-
-// Watch for available ports to auto-select and auto-connect
-watch(availablePorts, async (ports) => {
-  if (ports.length > 0 && !selectedPort.value && !isConnected.value && !isConnecting.value) {
-    selectedPort.value = ports[0].path
-    // Auto connect using the selected default baud rate
-    await connect(selectedPort.value, selectedBaudRate.value)
-  }
-})
-
-async function handleConnect(): Promise<void> {
-  if (isConnected.value) {
-    await disconnect()
-  } else if (selectedPort.value) {
-    await connect(selectedPort.value, selectedBaudRate.value)
-  }
-}
-
-async function handleScan(): Promise<void> {
-  await scanPorts()
-}
 
 // Window Controls
 async function handleMinimize(): Promise<void> {
@@ -134,75 +95,8 @@ async function handleClose(): Promise<void> {
       </div>
     </div>
 
-    <!-- Right: Serial connection controls -->
+    <!-- Right: Connection Status & Window controls -->
     <div class="flex flex-wrap items-center justify-center lg:justify-end gap-1.5 lg:gap-2 w-full lg:w-auto">
-      <!-- Error toast -->
-      <div v-if="lastError" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neon-red/10 border border-neon-red/20">
-        <svg class="w-3.5 h-3.5 text-neon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 8v4m0 4h.01" stroke-linecap="round" />
-        </svg>
-        <span class="text-[11px] text-neon-red/80">{{ lastError }}</span>
-      </div>
-
-      <!-- Scan button -->
-      <button
-        class="p-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-white/50 hover:text-white hover:bg-white/[0.1] transition-all duration-200"
-        :class="{ 'animate-spin': isScanning }"
-        :disabled="isScanning"
-        title="Scan Ports"
-        @click="handleScan"
-      >
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
-
-      <!-- Port selector -->
-      <select
-        v-model="selectedPort"
-        class="px-3 py-1.5 rounded-lg bg-black/60 border border-white/20 text-xs font-bold text-white outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer"
-        :disabled="isConnected"
-      >
-        <option value="" disabled class="bg-slate-900">Select Port</option>
-        <option
-          v-for="port in availablePorts"
-          :key="port.path"
-          :value="port.path"
-          class="bg-slate-900"
-        >
-          {{ port.path }} {{ port.manufacturer ? `(${port.manufacturer})` : '' }}
-        </option>
-      </select>
-
-      <!-- Baud rate selector -->
-      <select
-        v-model="selectedBaudRate"
-        class="px-3 py-1.5 rounded-lg bg-black/60 border border-white/20 text-xs font-bold text-white outline-none focus:border-neon-cyan/50 transition-all w-24 appearance-none cursor-pointer"
-        :disabled="isConnected"
-      >
-        <option v-for="baud in baudRates" :key="baud" :value="baud" class="bg-slate-900">
-          {{ baud }}
-        </option>
-      </select>
-
-      <!-- Connect/Disconnect button -->
-      <button
-        class="px-4 py-1.5 rounded-lg font-semibold text-xs transition-all duration-300 flex items-center gap-2 border"
-        :class="
-          isConnected
-            ? 'bg-neon-red/10 text-neon-red border-neon-red/30 hover:bg-neon-red/20'
-            : 'bg-neon-green/10 text-neon-green border-neon-green/30 hover:bg-neon-green/20'
-        "
-        :style="isConnected ? 'box-shadow: 0 0 12px rgba(255,23,68,0.15)' : 'box-shadow: 0 0 12px rgba(57,255,20,0.15)'"
-        :disabled="isConnecting || (!selectedPort && !isConnected)"
-        @click="handleConnect"
-      >
-        <span v-if="isConnecting" class="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
-        <template v-else>
-          {{ isConnected ? 'Disconnect' : 'Connect' }}
-        </template>
-      </button>
 
       <!-- Status dot -->
       <div class="flex items-center gap-2 ml-1">

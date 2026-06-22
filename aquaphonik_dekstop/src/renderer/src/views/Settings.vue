@@ -4,7 +4,49 @@
  * and data retention policies.
  * Theme: Futuristic Glassmorphism
  */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useSerial } from '../composables/useSerial'
+
+// Serial setup
+const {
+  isConnected,
+  currentPort,
+  availablePorts,
+  isScanning,
+  isConnecting,
+  lastError,
+  scanPorts,
+  connect,
+  disconnect
+} = useSerial()
+
+const selectedPort = ref('')
+const selectedBaudRate = ref(115200)
+const baudRates = [9600, 19200, 38400, 57600, 115200, 230400]
+
+// Auto-scan ports on mount
+scanPorts()
+
+// Watch for available ports to auto-select and auto-connect
+watch(availablePorts, async (ports) => {
+  if (ports.length > 0 && !selectedPort.value && !isConnected.value && !isConnecting.value) {
+    selectedPort.value = ports[0].path
+    // Auto connect using the selected default baud rate
+    await connect(selectedPort.value, selectedBaudRate.value)
+  }
+})
+
+async function handleConnect(): Promise<void> {
+  if (isConnected.value) {
+    await disconnect()
+  } else if (selectedPort.value) {
+    await connect(selectedPort.value, selectedBaudRate.value)
+  }
+}
+
+async function handleScan(): Promise<void> {
+  await scanPorts()
+}
 
 const logInterval = ref(1)
 const retentionDays = ref(30)
@@ -165,20 +207,77 @@ onMounted(() => {
         <h2 class="text-lg font-extrabold text-white uppercase tracking-widest">Serial Port</h2>
       </div>
 
-      <div class="p-3 md:p-4 rounded-2xl bg-black/40 border border-white/20 shadow-inner">
-        <p class="text-xs md:text-sm font-medium text-white leading-relaxed">
-          Pilih port serial pada header aplikasi, atur baud rate (default: 115200), lalu klik tombol Connect.
-        </p>
+      <!-- Serial Controls inside Settings -->
+      <div v-if="lastError" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-neon-red/10 border border-neon-red/20 mb-2">
+        <svg class="w-4 h-4 text-neon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v4m0 4h.01" stroke-linecap="round" />
+        </svg>
+        <span class="text-xs font-medium text-neon-red/90">{{ lastError }}</span>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 md:gap-4">
-        <div class="p-3 md:p-4 rounded-2xl bg-black/40 border border-white/20 shadow-inner">
-          <p class="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mb-1">Baud Rate</p>
-          <p class="text-xl md:text-2xl font-extrabold text-white font-mono drop-shadow-md">115200</p>
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-bold text-white uppercase tracking-wider w-20">Port</label>
+          <div class="flex flex-1 gap-2">
+            <select
+              v-model="selectedPort"
+              class="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-sm font-bold text-white outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer shadow-inner"
+              :disabled="isConnected"
+            >
+              <option value="" disabled class="bg-slate-900">Pilih Port</option>
+              <option
+                v-for="port in availablePorts"
+                :key="port.path"
+                :value="port.path"
+                class="bg-slate-900"
+              >
+                {{ port.path }} {{ port.manufacturer ? `(${port.manufacturer})` : '' }}
+              </option>
+            </select>
+            <button
+              class="px-3 py-2 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white/80 hover:text-white hover:bg-white/[0.1] transition-all duration-200"
+              :class="{ 'animate-spin': isScanning }"
+              :disabled="isScanning"
+              title="Scan Ports"
+              @click="handleScan"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="p-3 md:p-4 rounded-2xl bg-black/40 border border-white/20 shadow-inner">
-          <p class="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mb-1">Data Format</p>
-          <p class="text-xl md:text-2xl font-extrabold text-white font-mono drop-shadow-md">JSON</p>
+
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-bold text-white uppercase tracking-wider w-20">Baud Rate</label>
+          <select
+            v-model="selectedBaudRate"
+            class="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-sm font-bold text-white outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer shadow-inner"
+            :disabled="isConnected"
+          >
+            <option v-for="baud in baudRates" :key="baud" :value="baud" class="bg-slate-900">
+              {{ baud }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button
+            class="flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 border"
+            :class="
+              isConnected
+                ? 'bg-neon-red/10 text-neon-red border-neon-red/30 hover:bg-neon-red/20 shadow-[0_0_15px_rgba(255,23,68,0.2)]'
+                : 'bg-gradient-to-r from-neon-green to-emerald-500 text-white border-white/20 hover:shadow-[0_0_20px_rgba(57,255,20,0.4)]'
+            "
+            :disabled="isConnecting || (!selectedPort && !isConnected)"
+            @click="handleConnect"
+          >
+            <span v-if="isConnecting" class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+            <template v-else>
+              {{ isConnected ? 'Putuskan Koneksi' : 'Hubungkan' }}
+            </template>
+          </button>
         </div>
       </div>
         </div>
