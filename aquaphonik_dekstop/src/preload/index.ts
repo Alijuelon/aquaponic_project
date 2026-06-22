@@ -122,6 +122,15 @@ const aquaphonikAPI = {
       ipcRenderer.invoke('system:get-network-ip')
   },
 
+  // ---- Window ----
+  windowControls: {
+    /** Minimize the application window */
+    minimize: (): Promise<void> => ipcRenderer.invoke('window:minimize'),
+
+    /** Close the application */
+    close: (): Promise<void> => ipcRenderer.invoke('window:close')
+  },
+
   // ---- Export ----
   export: {
     /** Export sensor data to Excel file */

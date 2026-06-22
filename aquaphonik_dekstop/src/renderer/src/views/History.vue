@@ -155,41 +155,45 @@ async function exportToExcel(): Promise<void> {
 
     <!-- Filters -->
     <div class="glass-card p-5 flex flex-wrap items-end gap-5 bg-black/40 border border-white/10 shadow-2xl backdrop-blur-md rounded-3xl">
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 w-full sm:w-auto">
         <label class="text-sm font-bold text-white uppercase tracking-wider">Dari Tanggal</label>
         <input v-model="startDate" type="date"
-          class="px-4 py-2.5 rounded-xl bg-black/40 border border-white/30 text-base font-medium text-white shadow-inner outline-none focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/30 transition-all" />
+          class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-black/40 border border-white/30 text-base font-medium text-white shadow-inner outline-none focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/30 transition-all" />
       </div>
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 w-full sm:w-auto">
         <label class="text-sm font-bold text-white uppercase tracking-wider">Sampai Tanggal</label>
         <input v-model="endDate" type="date"
-          class="px-4 py-2.5 rounded-xl bg-black/40 border border-white/30 text-base font-medium text-white shadow-inner outline-none focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/30 transition-all" />
+          class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-black/40 border border-white/30 text-base font-medium text-white shadow-inner outline-none focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/30 transition-all" />
       </div>
-      <button @click="loadByDateRange" class="px-6 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-neon-blue to-neon-cyan border border-white/20 shadow-[0_0_15px_rgba(51,238,255,0.4)] hover:shadow-[0_0_25px_rgba(51,238,255,0.6)] transition-all">
-        Filter
-      </button>
-      <button @click="loadLatestLogs"
-        class="px-5 py-2.5 rounded-xl font-bold text-white bg-white/10 border border-white/30 hover:bg-white/20 transition-all shadow-md">
-        Latest {{ limit }}
-      </button>
+      <div class="flex gap-3 w-full sm:w-auto">
+        <button @click="loadByDateRange" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-neon-blue to-neon-cyan border border-white/20 shadow-[0_0_15px_rgba(51,238,255,0.4)] hover:shadow-[0_0_25px_rgba(51,238,255,0.6)] transition-all">
+          Filter
+        </button>
+        <button @click="loadLatestLogs"
+          class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl font-bold text-white bg-white/10 border border-white/30 hover:bg-white/20 transition-all shadow-md">
+          Latest {{ limit }}
+        </button>
+      </div>
 
-      <div class="flex items-center gap-3 ml-auto">
-        <label class="text-sm font-bold text-white uppercase tracking-wider">Show:</label>
-        <select v-model="limit"
-          class="px-3 py-2 rounded-xl bg-black/40 border border-white/30 text-base font-medium text-white shadow-inner outline-none focus:border-neon-cyan"
-          @change="loadLatestLogs">
-          <option :value="25">25</option>
-          <option :value="50">50</option>
-          <option :value="100">100</option>
-          <option :value="200">200</option>
-          <option :value="500">500</option>
-        </select>
+      <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto lg:ml-auto">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <label class="text-sm font-bold text-white uppercase tracking-wider">Show:</label>
+          <select v-model="limit"
+            class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-black/40 border border-white/30 text-base font-medium text-white shadow-inner outline-none focus:border-neon-cyan"
+            @change="loadLatestLogs">
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
+            <option :value="200">200</option>
+            <option :value="500">500</option>
+          </select>
+        </div>
 
         <!-- Export Excel Button -->
         <button
           @click="exportToExcel"
           :disabled="logs.length === 0 || isExporting"
-          class="group relative px-6 py-2.5 rounded-xl font-bold text-white border transition-all duration-300 flex items-center gap-2.5 overflow-hidden"
+          class="group relative px-6 py-2.5 rounded-xl font-bold text-white border transition-all duration-300 flex items-center justify-center gap-2.5 overflow-hidden w-full sm:w-auto flex-1 sm:flex-none"
           :class="logs.length === 0 || isExporting
             ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
             : 'bg-gradient-to-r from-emerald-600 to-emerald-400 border-emerald-300/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:from-emerald-500 hover:to-emerald-300 active:scale-[0.97]'"

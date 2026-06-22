@@ -201,6 +201,17 @@ function registerIpcHandlers(): void {
     return { ip: null, iface: null }
   })
 
+  // --- Window Controls Handlers ---
+
+  ipcMain.handle('window:minimize', () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win) win.minimize()
+  })
+
+  ipcMain.handle('window:close', () => {
+    app.quit()
+  })
+
   // --- Export Handlers ---
 
   /**

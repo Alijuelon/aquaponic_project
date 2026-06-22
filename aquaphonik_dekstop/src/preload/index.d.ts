@@ -39,6 +39,11 @@ interface SystemAPI {
   getNetworkIP: () => Promise<{ ip: string | null; iface: string | null }>
 }
 
+interface WindowControlsAPI {
+  minimize: () => Promise<void>
+  close: () => Promise<void>
+}
+
 interface ExportAPI {
   toExcel: (
     data: Array<Record<string, number | string>>,
@@ -52,6 +57,7 @@ interface AquaphonikAPI {
   settings: SettingsAPI
   system: SystemAPI
   export: ExportAPI
+  windowControls: WindowControlsAPI
 }
 
 declare global {
