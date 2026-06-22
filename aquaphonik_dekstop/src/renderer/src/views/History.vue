@@ -105,11 +105,29 @@ async function exportToExcel(): Promise<void> {
   exportMessage.value = ''
 
   try {
+    // Auto-detect date range from loaded data for accurate filenames
+    let actualStart = startDate.value || 'latest'
+    let actualEnd = endDate.value || 'latest'
+    try {
+      if (logs.value.length > 0) {
+        const dates = logs.value.map(l => new Date(l.timestamp).getTime()).filter(t => !isNaN(t))
+        if (dates.length > 0) {
+          actualStart = new Date(Math.min(...dates)).toISOString().split('T')[0]
+          actualEnd = new Date(Math.max(...dates)).toISOString().split('T')[0]
+        }
+      }
+    } catch (e) {
+      console.warn('Date parse error', e)
+    }
+
+    // Convert Vue proxies to plain objects to prevent IPC DataCloneError
+    const rawData = JSON.parse(JSON.stringify(logs.value))
+
     const result = await window.api.export.toExcel(
-      logs.value as unknown as Array<Record<string, number | string>>,
+      rawData,
       {
-        start: startDate.value || 'latest',
-        end: endDate.value || 'latest'
+        start: actualStart,
+        end: actualEnd
       }
     )
 
@@ -171,28 +189,28 @@ async function exportToExcel(): Promise<void> {
         <button
           @click="exportToExcel"
           :disabled="logs.length === 0 || isExporting"
-          class="group relative px-5 py-2.5 rounded-xl font-bold text-white border transition-all duration-300 flex items-center gap-2.5 overflow-hidden"
+          class="group relative px-6 py-2.5 rounded-xl font-bold text-white border transition-all duration-300 flex items-center gap-2.5 overflow-hidden"
           :class="logs.length === 0 || isExporting
             ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-            : 'bg-gradient-to-r from-emerald-600/20 to-green-500/20 border-emerald-500/40 hover:border-emerald-400/60 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.97]'"
+            : 'bg-gradient-to-r from-emerald-600 to-emerald-400 border-emerald-300/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:from-emerald-500 hover:to-emerald-300 active:scale-[0.97]'"
         >
           <!-- Shimmer effect on hover -->
-          <span class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></span>
+          <span class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></span>
 
           <!-- Icon -->
-          <span v-if="isExporting" class="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>
-          <svg v-else class="w-4.5 h-4.5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <span v-if="isExporting" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <svg v-else class="w-5 h-5 transition-transform group-hover:scale-110 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
 
-          <span class="relative z-10 text-sm">
+          <span class="relative z-10 text-sm drop-shadow-md">
             {{ isExporting ? 'Mengekspor...' : 'Export Excel' }}
           </span>
 
           <!-- Excel icon badge -->
-          <span v-if="!isExporting" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[10px] font-bold text-emerald-400 tracking-wider border border-emerald-500/30">
+          <span v-if="!isExporting" class="px-1.5 py-0.5 rounded bg-black/20 text-[10px] font-extrabold text-white tracking-wider border border-white/20 shadow-inner">
             .XLSX
           </span>
         </button>

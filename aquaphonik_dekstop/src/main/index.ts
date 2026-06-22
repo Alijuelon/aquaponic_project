@@ -221,7 +221,8 @@ function registerIpcHandlers(): void {
 
       // Show save dialog
       const defaultName = `AquaPhonik_Data_${dateRange.start}_to_${dateRange.end}.xlsx`
-      const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow()!, {
+      
+      const result = await dialog.showSaveDialog({
         title: 'Simpan Data Sensor ke Excel',
         defaultPath: defaultName,
         filters: [
@@ -304,17 +305,17 @@ function registerIpcHandlers(): void {
           const dataRow = worksheet.addRow({
             no: index + 1,
             timestamp: formattedTime,
-            temp_water: Number(row.temp_water || 0).toFixed(1),
-            ph: Number(row.ph || 0).toFixed(2),
-            tds: Number(row.tds || 0).toFixed(0),
-            do_value: Number(row.do_value || 0).toFixed(1),
-            turbidity: Number(row.turbidity || 0).toFixed(0),
-            water_lvl: Number(row.water_lvl || 0).toFixed(1),
-            co2: Number(row.co2 || 0).toFixed(0),
-            eco2: Number(row.eco2 || 0).toFixed(0),
-            tvoc: Number(row.tvoc || 0).toFixed(0),
-            temp_air: Number(row.temp_air || 0).toFixed(1),
-            humidity: Number(row.humidity || 0).toFixed(1),
+            temp_water: Number(row.temp_water || 0),
+            ph: Number(row.ph || 0),
+            tds: Number(row.tds || 0),
+            do_value: Number(row.do_value || 0),
+            turbidity: Number(row.turbidity || 0),
+            water_lvl: Number(row.water_lvl || 0),
+            co2: Number(row.co2 || 0),
+            eco2: Number(row.eco2 || 0),
+            tvoc: Number(row.tvoc || 0),
+            temp_air: Number(row.temp_air || 0),
+            humidity: Number(row.humidity || 0),
             pump_status: Number(row.pump_status) === 1 ? 'ON' : 'OFF',
             oxy_status: Number(row.oxy_status) === 1 ? 'ON' : 'OFF'
           })

@@ -145,7 +145,7 @@ export async function getLogsByDateRange(startDate: string, endDate: string): Pr
   if (!pool) return []
 
   try {
-    const query = 'SELECT * FROM sensor_logs WHERE timestamp BETWEEN $1 AND $2 ORDER BY timestamp ASC'
+    const query = 'SELECT * FROM sensor_logs WHERE timestamp BETWEEN $1 AND $2 ORDER BY timestamp DESC'
     const result = await pool.query(query, [startDate, endDate])
     return result.rows as SensorLog[]
   } catch (error) {
